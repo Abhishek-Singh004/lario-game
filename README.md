@@ -2,7 +2,7 @@
 
 A completely client-side, 2D browser platformer built entirely with **TypeScript**, **HTML5 Canvas**, and **Vite**. Jump, dash, and stomp your way through enemies, collect coins, find powerups, and face off against the final Fire Slime Boss!
 
-![Game Preview](public/new assets/LARIO LOGO.png) <!-- Update with an actual screenshot path later if available -->
+<!-- Update with an actual screenshot path later if available -->
 
 ## 🌟 Features
 * **Custom Physics Engine**: A lightweight, scratch-built Axis-Aligned Bounding Box (AABB) collision system.
