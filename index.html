@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Lario - 2D Platformer</title>
+    <link rel="stylesheet" href="/src/styles/game.css">
+  </head>
+  <body>
+    <div id="game-container">
+      <div id="ui-layer">
+        <div class="top-bar">
+          <div class="player-info">PLAYER: <span id="player-name-val">???</span></div>
+          <div class="score">SCORE: <span id="score-val">000000</span></div>
+          <div class="lives">LIVES: <span id="lives-val">3</span></div>
+        </div>
+        <div id="start-screen" class="active">
+          <div class="start-modal">
+            <h1 class="game-title">Lario</h1>
+            <p>Enter your name to begin!</p>
+            <input type="text" id="player-name-input" placeholder="Your Name" maxlength="12" />
+            <button id="start-btn">Start Game</button>
+          </div>
+        </div>
+        <div id="game-over-screen" class="hidden">
+          <h1>GAME OVER</h1>
+          <p>Press 'R' to Restart</p>
+        </div>
+        <div id="level-clear-screen" class="hidden">
+          <h1 style="color: #FFD700; text-shadow: 0 0 10px #FF4500, 0 0 20px #FF4500;">Awww Shit...You Really Won!</h1>
+          <p>Press 'R' to Restart</p>
+        </div>
+      </div>
+      <canvas id="game-canvas" width="800" height="600"></canvas>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
