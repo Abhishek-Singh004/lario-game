@@ -22,14 +22,16 @@ const LEVEL = [
   "................A.........................A.........................A................................A.......................................A.........................A.........................A................................A.......................",
   ".......A...........................A.......................A..............................A.........................A...................A...........................A.......................A..............................A.........................A..",
   "..............................A.........................A.........................A.............................A........................................A.........................A.........................A.............................A..........",
-  "........?..........B..B..B....B..BA............................A........B..B......B...BC...C....A.............?.........B..B....A.................B..B....C....?.....C.....B.C.........A.......B..B..........BC...C...A...............?........B.....B..",
   "......................................................................................................................................................................................................................................................",
+  "........?..........B..B..B....B..BA............................A........B..B......B...BC...C....A.............?.........B..B....A.................B..B....C....?.....C.....B.C.........A.......B..B..........BC...C...A...............?........B.....F..",
   "...............B............B................B......C.......B...................B..............B...................B............C......B........................B................C..B...................B..............B.........................B.....B",
   "..P...........E......................C.......E............C...E...............C...............E...........C...C.......E................C.......E..................E......................C...............E...........C...C.......E...................O",
   "#######################..################################..#######################################...########################..#######################################...################################..###############################################",
   "..........................................................................................................................................................................................................................................................",
   ".........................................................................................................................................................................................................................................................."
 ];
+
+import { PlayerFireball } from './entities/PlayerFireball';
 
 export class Game {
   player!: Player;
@@ -38,9 +40,11 @@ export class Game {
   tiles: Tile[] = [];
   powerups: Powerup[] = [];
   projectiles: Projectile[] = [];
+  playerFireballs: PlayerFireball[] = [];
   bombs: Bomb[] = [];
   boss: Boss | null = null;
   ufo: UFO | null = null;
+  checkpoints: {x: number, y: number}[] = [];
   
   camera: Camera;
   input: InputHandler;
@@ -77,6 +81,7 @@ export class Game {
     this.tiles = [];
     this.powerups = [];
     this.projectiles = [];
+    this.playerFireballs = [];
     this.bombs = [];
     this.boss = null;
     this.ufo = null;
@@ -100,6 +105,8 @@ export class Game {
           this.tiles.push(new Tile(px, py, tileSize, tileSize, TileType.BRICK));
         } else if (char === '?') {
           this.tiles.push(new Tile(px, py, tileSize, tileSize, TileType.ITEM_FULL));
+        } else if (char === 'F') {
+          this.tiles.push(new Tile(px, py, tileSize, tileSize, TileType.ITEM_FIREBALL));
         } else if (char === 'P') {
           this.player = new Player(px, py); 
         } else if (char === 'E') {
@@ -114,6 +121,27 @@ export class Game {
           this.ufo = new UFO(px, py);
         }
       }
+    }
+
+    this.checkpoints = [];
+    for (let i = 1; i <= 9; i++) {
+        const targetX = (this.levelWidth / 10) * i;
+        let bestTile: Tile | null = null;
+        let minDx = Infinity;
+        
+        for (const tile of this.tiles) {
+            if (tile.type === TileType.SOLID || tile.type === TileType.BRICK) {
+                const dx = Math.abs(tile.x - targetX);
+                // Pick nearest tile in X; if same X, pick the one highest up (smallest Y) to ensure it's the floor
+                if (dx < minDx || (dx === minDx && bestTile && tile.y < bestTile.y)) {
+                    minDx = dx;
+                    bestTile = tile;
+                }
+            }
+        }
+        if (bestTile) {
+            this.checkpoints.push({ x: bestTile.x, y: bestTile.y - 48 }); // 48 is player height
+        }
     }
   }
 
@@ -160,7 +188,7 @@ export class Game {
         inputX = -1;
       } else {
         inputX = 0;
-        if (this.ufo.y >= 352) {
+        if (this.ufo.y >= 256) {
            this.ufo.boarded = true;
            this.player.y = -1000; // Hide player inside UFO
         }
@@ -175,6 +203,11 @@ export class Game {
     
     if (this.player.justJumped) {
       this.sounds.playJump();
+    }
+    
+    if (this.player.wantsToShootFireball) {
+        this.playerFireballs.push(new PlayerFireball(this.player.x, this.player.y + 16, this.player.facingRight));
+        this.sounds.playMagic();
     }
 
     const hitTiles = CollisionDetector.applyPhysicsAndResolve(this.player, this.tiles, deltaTime);
@@ -199,6 +232,9 @@ export class Game {
             this.particles.spawnCoinSparkle(tile.x, tile.y - 16);
             this.sounds.playCoin();
             this.updateUI();
+        } else if (action === 'fireball') {
+            this.powerups.push(new Powerup(tile.x, tile.y, PowerupType.FIREBALL));
+            this.sounds.playCoin(); // Or some magic sound
         }
     }
     
@@ -224,7 +260,6 @@ export class Game {
     // Update Bombs
     for (const bomb of this.bombs) {
         bomb.update(deltaTime);
-        CollisionDetector.applyPhysicsAndResolve(bomb as any, this.tiles, deltaTime);
         
         // Bomb kills player
         if (!bomb.dead && this.player.state !== PlayerState.DEAD && CollisionDetector.checkAABB(this.player, bomb)) {
@@ -237,6 +272,27 @@ export class Game {
         }
     }
     this.bombs = this.bombs.filter(b => !b.dead);
+
+    // Update Player Fireballs
+    for (const fb of this.playerFireballs) {
+        fb.update(deltaTime);
+        
+        if (!fb.dead && this.boss && !this.boss.dead && this.boss.active && CollisionDetector.checkAABB(fb, this.boss)) {
+            fb.dead = true;
+            this.boss.dead = true; // INSTANT KILL
+            this.sounds.playStomp();
+            this.particles.spawnBrickDebris(this.boss.x, this.boss.y);
+            this.score += 5000;
+            this.updateUI();
+            
+            if (this.boss.dead && !this.ufo) {
+                this.ufo = new UFO(this.boss.x, -100);
+                this.ufo.active = true;
+                this.cutsceneMode = true;
+            }
+        }
+    }
+    this.playerFireballs = this.playerFireballs.filter(fb => !fb.dead);
 
     // Update Powerups
     for (const powerup of this.powerups) {
@@ -251,6 +307,12 @@ export class Game {
              this.sounds.playCoin(); 
              this.player.isInvincible = true;
              this.player.invincibleTimer = 15;
+         } else if (powerup.type === PowerupType.FIREBALL) {
+             this.sounds.playCoin();
+             this.player.hasFireball = true;
+             this.player.fireballDuration = 5.0;
+             this.player.fireballsShot = 0;
+             this.player.fireballShootTimer = 0; // shoot immediately
          }
       }
     }
@@ -268,7 +330,14 @@ export class Game {
         enemy.update(deltaTime);
       }
       
-      if (!enemy.dead && this.player.state !== PlayerState.DEAD && CollisionDetector.checkAABB(this.player, enemy)) {
+      const hitBox = {
+          x: enemy.x + 8,
+          y: enemy.y + 8,
+          width: enemy.width - 16,
+          height: enemy.height - 8
+      };
+      
+      if (!enemy.dead && this.player.state !== PlayerState.DEAD && CollisionDetector.checkAABB(this.player, hitBox)) {
         if (this.player.isInvincible) {
             enemy.dead = true;
             this.sounds.playStomp();
@@ -378,8 +447,34 @@ export class Game {
       document.getElementById('game-over-screen')?.classList.remove('hidden');
     } else {
       setTimeout(() => {
-        if (!this.isGameOver) this.parseLevel(LEVEL);
+        if (!this.isGameOver) this.revivePlayer();
       }, 1000);
+    }
+  }
+
+  revivePlayer() {
+    let bestCp = { x: 100, y: 100 }; // default start
+    for (const cp of this.checkpoints) {
+        if (cp.x <= this.player.x) {
+            if (cp.x > bestCp.x) {
+                bestCp = cp;
+            }
+        }
+    }
+    
+    this.player.x = bestCp.x;
+    this.player.y = bestCp.y;
+    this.player.vx = 0;
+    this.player.vy = 0;
+    this.player.state = PlayerState.IDLE;
+    this.player.isInvincible = true;
+    this.player.invincibleTimer = 2.0;
+    
+    if (this.player.x < this.bossArenaX) {
+        this.inBossArena = false;
+        this.camera.update(this.player.x);
+    } else {
+        this.camera.update(this.bossArenaX + 400);
     }
   }
 

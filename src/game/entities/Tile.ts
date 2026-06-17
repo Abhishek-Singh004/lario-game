@@ -2,7 +2,8 @@ export enum TileType {
   SOLID,
   BRICK,
   ITEM_FULL,
-  ITEM_EMPTY
+  ITEM_EMPTY,
+  ITEM_FIREBALL
 }
 
 export class Tile {
@@ -35,7 +36,7 @@ export class Tile {
     }
   }
 
-  hitFromBelow(): 'break' | 'coin' | 'bounce' | 'none' {
+  hitFromBelow(): 'break' | 'coin' | 'bounce' | 'none' | 'fireball' {
     if (this.type === TileType.SOLID || this.type === TileType.ITEM_EMPTY) {
       return 'none';
     }
@@ -46,8 +47,13 @@ export class Tile {
       this.markedForDestruction = true;
       return 'break';
     } else if (this.type === TileType.ITEM_FULL) {
-      this.markedForDestruction = true; // Destroy completely per user feedback
-      return 'coin'; 
+      this.type = TileType.ITEM_EMPTY;
+      this.bounceTimer = 0.15;
+      return 'coin'; // the game will decide if it's coin or powerup based on random chance
+    } else if (this.type === TileType.ITEM_FIREBALL) {
+      this.type = TileType.ITEM_EMPTY;
+      this.bounceTimer = 0.15;
+      return 'fireball';
     }
     return 'bounce';
   }

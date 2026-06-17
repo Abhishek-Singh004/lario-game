@@ -20,7 +20,7 @@ export class SoundManager {
     // Load all audio files
     for (const s of this.soundsToLoad) {
       try {
-        const response = await fetch(import.meta.env.BASE_URL + s.url.substring(1));
+        const response = await fetch((import.meta as any).env.BASE_URL + s.url.substring(1));
         const arrayBuffer = await response.arrayBuffer();
         const audioBuffer = await this.audioCtx.decodeAudioData(arrayBuffer);
         this.buffers.set(s.key, audioBuffer);

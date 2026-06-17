@@ -9,17 +9,17 @@ export class UFO {
 
   constructor(x: number, y: number) {
     this.x = x;
-    this.y = y;
-    this.width = 64;
-    this.height = 32;
+    this.y = y - 96; // Offset for new height
+    this.width = 256;
+    this.height = 128;
   }
 
   update(deltaTime: number) {
     if (this.active && !this.boarded) {
-      // Descend slowly until it hits platform (y = 352)
-      if (this.y < 352) {
+      // Descend slowly until it hits platform (y = 256)
+      if (this.y < 256) {
          this.y += 100 * deltaTime;
-         if (this.y > 352) this.y = 352;
+         if (this.y > 256) this.y = 256;
       }
     } else if (this.boarded) {
       // Ascend to win

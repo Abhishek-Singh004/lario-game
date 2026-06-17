@@ -32,7 +32,7 @@ export class AssetManager {
     const promises = this.assetsToLoad.map(asset => {
       return new Promise<void>((resolve, reject) => {
         const img = new Image();
-        img.src = import.meta.env.BASE_URL + asset.url.substring(1);
+        img.src = (import.meta as any).env.BASE_URL + asset.url.substring(1);
         img.onload = () => {
           this.images.set(asset.key, img);
           this.loadedCount++;

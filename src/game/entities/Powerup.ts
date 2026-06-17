@@ -1,6 +1,7 @@
 export enum PowerupType {
   HEART,
-  GEM
+  GEM,
+  FIREBALL
 }
 
 export class Powerup {

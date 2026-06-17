@@ -22,9 +22,9 @@ export class Boss {
 
   constructor(x: number, y: number) {
     this.x = x;
-    this.y = y;
-    this.width = 64; 
-    this.height = 64;
+    this.y = y - 32; // Offset for increased height
+    this.width = 96; 
+    this.height = 96;
     this.vx = 0; 
     this.vy = 0;
     this.health = 1; 
@@ -67,10 +67,21 @@ export class Boss {
       }
     } else {
       // Phase 2: Chasing and Evasion
-      if (player.x > this.x) {
-        this.vx = this.speed;
-      } else {
-        this.vx = -this.speed;
+      let chasingTimer = this.phaseTimer - 10.0;
+      let isEvading = false;
+      
+      if (chasingTimer <= 10.0 && player.vy > 0 && player.y < this.y + this.height && Math.abs(player.x - this.x) < 120) {
+          // Evade! Player is above and falling
+          this.vx = player.x > this.x ? -this.speed * 2 : this.speed * 2;
+          isEvading = true;
+      }
+      
+      if (!isEvading) {
+          if (player.x > this.x) {
+            this.vx = this.speed;
+          } else {
+            this.vx = -this.speed;
+          }
       }
 
       // Random jumping to evade player
@@ -118,6 +129,10 @@ export class Boss {
       this.vy = -500 - Math.random() * 200; 
       this.isJumping = true;
     }
+
+    // Apply Gravity
+    this.vy += 1200 * deltaTime;
+    if (this.vy > 600) this.vy = 600;
   }
 
   reverseDirection() {

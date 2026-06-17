@@ -17,7 +17,7 @@ export class Player {
   
   // Physics constants
   speed: number = 200;
-  jumpForce: number = -450; // negative is up
+  jumpForce: number = -550; // tuned for ~2 tiles short tap
   gravity: number = 1200;
   maxFallSpeed: number = 600;
   friction: number = 0.8; // for sliding
@@ -27,7 +27,7 @@ export class Player {
   // Advanced Game Feel
   isGrounded: boolean;
   coyoteTimer: number;
-  coyoteTimeMax: number = 0.1; // 100ms
+  coyoteTimeMax: number = 0.2; // 200ms
   jumpBufferTimer: number;
   jumpBufferMax: number = 0.1; // 100ms
   
@@ -37,12 +37,18 @@ export class Player {
   facingRight: boolean = true;
 
   jumpTimer: number = 0;
-  maxJumpTime: number = 0.3;
   isDashing: boolean = false;
   dashMultiplier: number = 1.6;
   
   isInvincible: boolean = false;
   invincibleTimer: number = 0;
+
+  // Fireball Powerup
+  hasFireball: boolean = false;
+  fireballDuration: number = 0;
+  fireballShootTimer: number = 0;
+  fireballsShot: number = 0;
+  wantsToShootFireball: boolean = false;
 
   constructor(x: number, y: number) {
     this.x = x;
@@ -93,6 +99,23 @@ export class Player {
         }
     }
 
+    // Fireball logic
+    this.wantsToShootFireball = false;
+    if (this.hasFireball) {
+        this.fireballDuration -= deltaTime;
+        this.fireballShootTimer -= deltaTime;
+        
+        if (this.fireballShootTimer <= 0 && this.fireballsShot < 15) {
+            this.wantsToShootFireball = true;
+            this.fireballsShot++;
+            this.fireballShootTimer = 5.0 / 15.0; // 3 per second
+        }
+
+        if (this.fireballDuration <= 0 || this.fireballsShot >= 15) {
+            this.hasFireball = false;
+        }
+    }
+
     // Handle Jump Initiation
     if (this.jumpBufferTimer > 0 && this.coyoteTimer > 0) {
       this.vy = this.jumpForce;
@@ -101,7 +124,7 @@ export class Player {
       this.isGrounded = false;
       this.state = PlayerState.JUMPING;
       this.justJumped = true;
-      this.jumpTimer = this.maxJumpTime; // Give fuel
+      this.jumpTimer = this.isDashing ? 0.35 : 0.23; // Give fuel based on sprint
     }
 
     // Variable Jump Height / Ascending

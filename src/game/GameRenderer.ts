@@ -100,14 +100,27 @@ export class GameRenderer {
 
     // 5. Draw Powerups
     for (const p of game.powerups) {
-       const imgKey = p.type === PowerupType.HEART ? 'heart' : 'gem';
+       let imgKey = 'heart';
+       if (p.type === PowerupType.GEM) imgKey = 'gem';
+       else if (p.type === PowerupType.FIREBALL) imgKey = 'fireball'; // assuming there is a fireball asset
+       
        const img = game.assets.get(imgKey);
        if (img) {
            this.ctx.drawImage(img, p.x, p.y, p.width, p.height);
        } else {
-           this.ctx.fillStyle = p.type === PowerupType.HEART ? 'pink' : 'cyan';
+           if (p.type === PowerupType.HEART) this.ctx.fillStyle = 'pink';
+           else if (p.type === PowerupType.GEM) this.ctx.fillStyle = 'cyan';
+           else this.ctx.fillStyle = 'orange'; // FIREBALL
            this.ctx.fillRect(p.x, p.y, p.width, p.height);
        }
+    }
+
+    // 5.5. Draw Player Fireballs
+    for (const fb of game.playerFireballs) {
+        this.ctx.fillStyle = 'orange';
+        this.ctx.beginPath();
+        this.ctx.arc(fb.x + fb.width/2, fb.y + fb.height/2, fb.width/2, 0, Math.PI * 2);
+        this.ctx.fill();
     }
 
     // 6. Draw Player
