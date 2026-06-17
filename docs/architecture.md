@@ -14,13 +14,15 @@ Levels are defined as an array of strings in `Game.ts` (the `LEVEL` constant). E
 - `#` : Solid Ground
 - `B` : Breakable Brick
 - `?` : Item Block
+- `F` : Fireball Powerup Block
 - `C` : Coin
 - `P` : Player Spawn
 - `E` : Ground Enemy
 - `A` : Air Enemy
 - `O` : Boss Spawn
+- `U` : UFO
 
-The `parseLevel()` function reads this string matrix and instantiates the corresponding TypeScript classes into an absolute pixel-space environment. The entire game uses a **64x64 pixel grid**.
+The `parseLevel()` function reads this string matrix and instantiates the corresponding TypeScript classes into an absolute pixel-space environment. The entire game uses a **64x64 pixel grid**. After parsing, it calculates 9 safe platform checkpoints spanning the level width to allow the player to revive without completely resetting progress.
 
 ## 3. Custom Physics & Collision (AABB)
 Instead of using a library like Matter.js, physics are handled via Axis-Aligned Bounding Box (AABB) detection in `CollisionDetector.ts`.
@@ -33,9 +35,12 @@ Instead of using a library like Matter.js, physics are handled via Axis-Aligned 
 ## 4. Entity Component System (Simplified)
 All interactive objects live in `src/game/entities/`. While not a strict ECS framework, entities share common properties (`x`, `y`, `width`, `height`, `vx`, `vy`) making them easy to pass into the unified `CollisionDetector`.
 
-- **Player.ts**: Handles input acceleration, jump forces, and invincible states.
+- **Player.ts**: Handles input acceleration, variable jump heights, coyote time, and invincible states.
 - **Enemy.ts**: Implements edge-detection logic to reverse direction when reaching a pit.
-- **Boss.ts**: Features a timed state machine (Bombing Phase vs. Chasing Phase).
+- **Boss.ts**: Features a timed state machine (Bombing Phase vs. Chasing/Evasion Phase).
+- **Bomb.ts**: Projectiles spawned by the Boss featuring delayed gravity to travel horizontally before dropping.
+- **PlayerFireball.ts**: Auto-shooting projectiles collected via the Fireball powerup block.
+- **UFO.ts**: The final escape vehicle that triggers the cutscene sequence when the level is cleared.
 
 ## 5. Asset Management
 Because canvas rendering requires images to be fully loaded before drawing, `AssetManager.ts` handles preloading. It returns a Promise that only resolves when every `.png` sprite is loaded into browser memory, ensuring no invisible objects pop in during gameplay.

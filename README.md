@@ -5,9 +5,10 @@ A completely client-side, 2D browser platformer built entirely with **TypeScript
 <!-- Update with an actual screenshot path later if available -->
 
 ## 🌟 Features
-* **Custom Physics Engine**: A lightweight, scratch-built Axis-Aligned Bounding Box (AABB) collision system.
-* **Dynamic AI**: Ground enemies detect pits and walls, Air enemies patrol the skies, and the Boss features a multi-phase AI combat system.
-* **Powerups & RNG Drops**: Break bricks for a chance to find hidden Hearts (Extra Life) or Gems (Invincibility).
+* **Custom Physics Engine**: A lightweight, scratch-built Axis-Aligned Bounding Box (AABB) collision system, featuring coyote time and variable jump heights for precise platforming.
+* **Dynamic AI & Boss Battles**: Ground enemies detect pits, Air enemies patrol, and the Boss features a multi-phase AI combat system with evasion tactics and delayed-gravity bombs.
+* **Checkpoint & Revival System**: Dying gracefully revives you at the nearest safe platform with spawn invincibility instead of resetting your progress.
+* **Powerups & RNG Drops**: Break bricks to find hidden Hearts (Extra Life), Gems (Invincibility), or Fireballs (Auto-Shooting Projectiles).
 * **Zero Dependencies**: Pure HTML5 Canvas rendering. No heavy game engines (like Phaser or Unity)—just raw TypeScript performance.
 
 ## 🚀 Getting Started
