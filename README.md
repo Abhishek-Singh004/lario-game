@@ -71,6 +71,13 @@ lario-game/
 ## 🛠️ Deep Dive
 Are you a developer looking to understand how the physics system works or how the level matrix is parsed? Check out the [Architecture Guide](docs/architecture.md) for an in-depth breakdown of the codebase!
 
+## 🤖 AI Master Prompt
+Want to recreate this game from scratch using an AI coding assistant (like Claude, GPT-4, or Gemini)? We have generated a highly specific **Master Prompt** that details the exact technology stack, architecture, custom physics engine, dynamic AI behaviors, and checkpoint logic used in this project.
+
+You can copy and paste this prompt into your AI assistant to generate a functional, zero-dependency platformer using HTML5 Canvas and TypeScript.
+
+👉 **[View the Master Prompt here](https://github.com/Abhishek-Singh004/lario-game/blob/main/master_prompt.txt)**
+
 ## 🤝 Contributing
 Contributions, issues, and feature requests are welcome! Feel free to check the [issues page](https://github.com/yourusername/lario-game/issues).
 
