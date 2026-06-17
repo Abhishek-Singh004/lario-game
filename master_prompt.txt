@@ -1,0 +1,78 @@
+You are an expert TypeScript game developer. Your task is to recreate a complete, production-ready 2D platformer game called "Lario Game" from scratch. You must write the entire application using ONLY HTML5 Canvas, pure TypeScript, and Vite. **Do not use any game engine libraries** (like Phaser, Unity, Pixi.js, or Matter.js). You must implement your own physics engine, entity component system, and render loop.
+
+Follow these extremely specific and detailed requirements to perfectly recreate the game:
+
+### 1. Technology Stack & Project Structure
+- **Build Tool:** Vite.
+- **Language:** TypeScript.
+- **Rendering:** HTML5 `<canvas>` via `CanvasRenderingContext2D`.
+- **Directory Structure:**
+  - `src/main.ts` (Entry point, initializes the game).
+  - `src/style.css` (Styles for UI overlays).
+  - `src/game/Game.ts` (Main logic loop, state manager, level parser).
+  - `src/game/GameRenderer.ts` (Separated canvas drawing logic).
+  - `src/game/CollisionDetector.ts` (AABB custom physics and overlap resolution).
+  - `src/game/InputHandler.ts` (Keyboard polling).
+  - `src/game/Camera.ts` (Viewport management).
+  - `src/game/AssetManager.ts` & `SoundManager.ts` (Resource loading/playback).
+  - `src/game/ParticleManager.ts` (Particle systems).
+  - `src/game/entities/` (Contains Player, Enemy, Boss, Bomb, UFO, Coin, Tile, Powerup, PlayerFireball).
+
+### 2. Core Systems & Architecture
+- **Game Loop:** Must use `requestAnimationFrame`. Calculate `deltaTime` so all physics, movement, and animations are frame-rate independent.
+- **Physics Engine (CollisionDetector.ts):** Implement Axis-Aligned Bounding Box (AABB) collision. When an entity intersects with a solid tile, calculate penetration depth and push the entity out along the shallowest axis.
+- **Level Parsing:** Use a string matrix array (`string[]`). The game uses a **64x64 pixel grid**. Map the following characters to entities:
+  - `.` = Empty
+  - `#` = Solid Ground
+  - `B` = Breakable Brick (can drop items)
+  - `?` = Item Block (always drops an item)
+  - `F` = Fireball Powerup Block
+  - `C` = Coin
+  - `P` = Player Spawn
+  - `E` = Ground Enemy
+  - `A` = Air Enemy
+  - `O` = Boss Spawn
+  - `U` = UFO (Escape vehicle)
+- **Camera System:** Follows the player's X position. The level has a "Boss Arena" at the final 800 pixels of the level width. Once the player crosses into the arena, the camera locks in place, and the player/boss are restricted by invisible bounds.
+
+### 3. Player Mechanics (Player.ts)
+- **Movement:** Left/Right arrow keys for horizontal acceleration and friction-based deceleration. Shift to dash (boost velocity).
+- **Jumping:** Spacebar or Up Arrow.
+  - **Variable Jump Height:** If the player releases the jump key early, immediately cut their vertical velocity (Y velocity).
+  - **Coyote Time:** Allow the player a 200ms grace window to jump *after* walking off a ledge (tracked via `coyoteTimer` and `coyoteTimeMax = 0.2`).
+- **Powerups:**
+  - *Heart:* Restores a life.
+  - *Gem:* Grants temporary invincibility.
+  - *Fireball:* Allows the player to shoot projectiles. Max 15 fireballs in 5 seconds without requiring key presses.
+- **Death & Checkpoints:** 
+  - Do not reset the entire level on death.
+  - On level parse, dynamically generate 9 checkpoints spanning 10% to 90% of the level width. For each checkpoint, scan downward to ensure the coordinate is on a solid safe platform (not a pit).
+  - `revivePlayer()`: Upon death, teleport the player to the nearest passed checkpoint, reset velocity, and grant 2 seconds of spawn invincibility.
+
+### 4. Enemies & Combat
+- **Ground Enemies (Enemy.ts):** Move horizontally. Implement edge-detection so they reverse direction when they hit a wall or reach a pit.
+  - *Hitbox Fix:* Reduce the physical collision width of enemies by 16px to make getting close more forgiving for the player.
+- **Air Enemies (AirEnemy.ts):** Patrol horizontally back and forth in the sky.
+- **Stomp Mechanic:** If the player collides with an enemy and is falling (`vy > 0`) and above the enemy, bounce the player up and kill the enemy.
+
+### 5. Final Boss (Boss.ts)
+- **Dimensions:** 96x96 pixels (1.5x scale compared to normal 64x64 entities).
+- **Multi-Phase AI:**
+  - **Phase 1 (0-10 seconds):** Bombing Phase. Boss stands mostly stationary on the right side of the arena and rapidly throws bombs.
+  - **Phase 2 (10-20 seconds):** Chasing & Evasion Phase. Boss chases the player. **Evasion trigger:** If the player jumps and is falling directly towards the Boss to stomp it, the Boss must rapidly dash 1 tile left or right to evade the attack.
+- **Boss Bombs (Bomb.ts):** 
+  - Thrown horizontally by the boss.
+  - **Delayed Gravity:** Bombs must travel exactly 8 tiles (512 pixels) purely horizontally. Once they travel 512px, gravity activates and pulls them down.
+  - Bombs pass through solid bricks/tiles without getting stuck, but kill the player on contact.
+- **Boss Defeat:** Can be defeated by hitting it with a Fireball. Upon death, it drops a UFO.
+
+### 6. Endgame & UI
+- **UFO (UFO.ts):** Spawns when the Boss dies. If the player collides with the UFO, trigger a cutscene where the UFO ascends off the top of the screen. Once off-screen, trigger the Level Clear UI.
+- **UI Overlays:** Overlay absolute HTML `<div>` elements over the Canvas to track Score, Coins, Lives. Include hidden `game-over-screen` and `level-clear-screen` modals.
+
+### 7. Asset & State Management
+- **AssetManager:** Load all `.png` files asynchronously via Promises before starting the game loop to avoid pop-in.
+- **SoundManager:** Load `.mp3`/`.wav` effects. Play coin sounds on collection, death sounds on falling in pits.
+- **ParticleManager:** Spawn simple canvas-drawn square particles for coin sparkles and brick breaking.
+
+Implement the entire codebase architecture following these rigorous specs exactly.
