@@ -2,8 +2,10 @@
 
 A completely client-side, 2D browser platformer built entirely with **TypeScript**, **HTML5 Canvas**, and **Vite**. Jump, dash, and stomp your way through enemies, collect coins, find powerups, and face off against the final Fire Slime Boss!
 
-<!-- Update with an actual screenshot path later if available -->
+## 📸 Gameplay Screenshots
 
+![Gameplay 1](Images/Image%201.png)
+![Gameplay 2](Images/image%202.png)
 ## 🌟 Features
 * **Custom Physics Engine**: A lightweight, scratch-built Axis-Aligned Bounding Box (AABB) collision system, featuring coyote time and variable jump heights for precise platforming.
 * **Dynamic AI & Boss Battles**: Ground enemies detect pits, Air enemies patrol, and the Boss features a multi-phase AI combat system with evasion tactics and delayed-gravity bombs.
